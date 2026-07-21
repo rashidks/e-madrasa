@@ -1,31 +1,37 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+
+from app.database import engine
 
 app = FastAPI(
-    title="Madrasa LMS API",
-    description="Backend API for the Madrasa learning platform (Web + Android + iPhone)",
+    title="E-Madrasa API",
     version="1.0.0",
-    openapi_tags=[
-        {"name": "Health", "description": "Application health endpoints"},
-    ],
-)
-
-# Allow the React web app (and later, the mobile app's webview) to call this API.
-# In production, replace "*" with your actual frontend domain(s) for security.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 
-@app.get("/", tags=["Health"])
-def root():
-    return {"message": "Madrasa LMS API is running"}
+@app.get("/")
+def home():
+    return {"message": "E-Madrasa Backend Running"}
 
 
-@app.get("/health", tags=["Health"])
-def health_check():
-    return {"status": "ok"}
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
+
+@app.get("/db-test")
+def db_test():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+
+        return {
+            "success": True,
+            "message": "Database Connected Successfully",
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e),
+        }
